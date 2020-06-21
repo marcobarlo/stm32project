@@ -40,7 +40,8 @@ void portsStartup()             // pe3 sensore, pe0 pe1 usart, pa11 pa12 usart r
 	GPIOA->AFR[1] |= 7 << 16;             //alternate f for hanshake sempre funzione 7
 	GPIOE->ODR |= GPIO_ODR_3;			// valori alti per inizio comunicazione con sensore
 	GPIOA->MODER &= ~(GPIO_MODER_MODER0);       //input digitale per pa0, bottone
-	GPIOC->MODER |= GPIO_MODER_MODER4_1 ;		//usart in alt function
+	GPIOC->MODER |=  GPIO_MODER_MODER5_1 | GPIO_MODER_MODER4_1;			//usart in alternate function
+	GPIOC->AFR[0] |= 7<<20;						 //usart tx pc5 alternate f 7   afr[0] è il reg alternate function per linee da 0 a 8
 	GPIOC->AFR[0] |= 7<<16;                    //usart tx pc4 alternate f 7   afr[0] è il reg alternate function per linee da 0 a 8
 }
 
