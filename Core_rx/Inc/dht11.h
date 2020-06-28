@@ -9,7 +9,7 @@
 #define INC_DHT11_H_
 
 #include "functions.h"
-#include "stm32f3xx.h"
+#include "stm32f30x.h"
 
 #define tim TIM2			//uso il timer 2 per i delay
 

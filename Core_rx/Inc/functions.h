@@ -8,7 +8,7 @@
 #ifndef INC_FUNCTIONS_H_
 #define INC_FUNCTIONS_H_
 
-#include "stm32f3xx.h"
+#include "stm32f30x.h"
 
 #define NACK 0
 

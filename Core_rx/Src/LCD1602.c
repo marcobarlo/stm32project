@@ -1,25 +1,40 @@
-#include <LCD1602.h>
+#include "LCD1602.h"
 #include "functions.h"
-#include "stm32f3xx_hal.h"
+//#include "stm32f3xx_hal.h"
+
+void writePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, uint8_t PinState)
+{
+  if(PinState == 0)
+  {
+    //GPIOx->BSRR = (uint32_t)GPIO_Pin;
+	  GPIOx->ODR &= ~GPIO_Pin;
+  }
+  else
+  {
+    //GPIOx->BRR = (uint32_t)GPIO_Pin;
+	  GPIOx->ODR |= GPIO_Pin;
+  }
+}
+
 
 void send_to_lcd (char data, uint8_t rs)
 {
-	HAL_GPIO_WritePin(RS_GPIO_Port, RS_Pin, rs);  // rs = 1 for data, rs=0 for command
+	writePin(RS_GPIO_Port, RS_Pin, rs);  // rs = 1 for data, rs=0 for command
 	// write the data to the respective pin
-	HAL_GPIO_WritePin(D7_GPIO_Port, D7_Pin, ((data>>3)&0x01));
-	HAL_GPIO_WritePin(D6_GPIO_Port, D6_Pin, ((data>>2)&0x01));
-	HAL_GPIO_WritePin(D5_GPIO_Port, D5_Pin, ((data>>1)&0x01));
-	HAL_GPIO_WritePin(D4_GPIO_Port, D4_Pin, ((data>>0)&0x01));
+	writePin(D7_GPIO_Port, D7_Pin, ((data>>3)&0x01));
+	writePin(D6_GPIO_Port, D6_Pin, ((data>>2)&0x01));
+	writePin(D5_GPIO_Port, D5_Pin, ((data>>1)&0x01));
+	writePin(D4_GPIO_Port, D4_Pin, ((data>>0)&0x01));
 
 	/* Toggle EN PIN to send the data
 	 * if the HCLK > 100 MHz, use the  20 us delay
 	 * if the LCD still doesn't work, increase the delay to 50, 80 or 100..
 	 */
-	HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, 1);
-	tim_delay(1440, tim);
+	writePin(EN_GPIO_Port, EN_Pin, 1);
+	tim_delay(3600, tim);
 
-	HAL_GPIO_WritePin(EN_GPIO_Port, EN_Pin, 0);
-	tim_delay(1440, tim);
+	writePin(EN_GPIO_Port, EN_Pin, 0);
+	tim_delay(3600, tim);
 	//tempi stretchati oltre il limite descritto dal datasheet (nell'ordine dei nanosecondi...a cosa serve?)
 }
 
@@ -73,28 +88,28 @@ void lcd_put_cur(int row, int col)
 
 void lcd_init (void)
 {
-	// 4 bit initialisation
-	tim_delay(3600000, tim);		//wait for 50 ms (>40)
-	lcd_send_cmd (0x30);							// 0x30 come comando = 0011 0000 ----> db5=1 set function, db4=1 4bit di interf, db3=0 2 lines ,db2=0 fontsize 5*11
-	tim_delay(360000, tim);  		// wait for >4.1ms
+	tim_delay(7200000, tim); // wait for >40ms
 	lcd_send_cmd (0x30);
-	tim_delay(72000, tim);  			// wait for >100microsec
+	tim_delay(360000, tim);  // wait for >4.1ms
+	lcd_send_cmd (0x30);
+	tim_delay(72000, tim);  // wait for >100us
 	lcd_send_cmd (0x30);
 	tim_delay(720000, tim);
-	lcd_send_cmd (0x20);  		//4bit
+	lcd_send_cmd (0x20);  // 4bit mode
 	tim_delay(720000, tim);
-	//controlla queste cose strane
-	// display initialisation
+
+	  // dislay initialisation
 	lcd_send_cmd (0x28); // Function set --> DL=0 (4 bit mode), N = 1 (2 line display) F = 0 (5x8 characters)
 	tim_delay(72000, tim);
-	lcd_send_cmd (0x08); //Display on/off control --> D=0,C=0, B=0  ---> display off con cursore e posizione del cursore spenta
+	lcd_send_cmd (0x08); //Display on/off control --> D=0,C=0, B=0  ---> display off
 	tim_delay(72000, tim);
 	lcd_send_cmd (0x01);  // clear display
 	tim_delay(72000, tim);
 	tim_delay(72000, tim);
-	lcd_send_cmd (0x06); //Entry mode set --> I/D = 1 (il cursore incrementa verso destra) & S = 0 (no shift del display alla lettura)
+	lcd_send_cmd (0x06); //Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
 	tim_delay(72000, tim);
 	lcd_send_cmd (0x0C); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits)
+
 }
 
 void lcd_send_string (char *str)
